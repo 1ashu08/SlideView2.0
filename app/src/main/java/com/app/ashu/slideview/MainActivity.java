@@ -14,7 +14,7 @@ import com.app.ashu.slideview.Fragment.CallsFragment;
 import com.app.ashu.slideview.Fragment.ChatFragment;
 import com.app.ashu.slideview.Fragment.ContactsFragment;
 
-import com.app.ashu.slideview.ViewPagerAdapter;
+import com.app.ashu.slideview.adapter.ViewPagerAdapter;
 
 
 public class MainActivity extends AppCompatActivity {

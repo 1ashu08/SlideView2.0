@@ -1,4 +1,4 @@
-package com.app.ashu.slideview;
+package com.app.ashu.slideview.adapter;
 
 
 import android.support.v4.app.Fragment;
