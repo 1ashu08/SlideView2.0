@@ -22,11 +22,13 @@ import java.util.ArrayList;
 public class SpecificUserMessage extends AppCompatActivity {
 
 
-    public static  String dName;
+    public static ArrayList<UserLog> user=new ArrayList<UserLog>();
+    public static int index=-1;
+
+
     EditText msgBx;
     TextView displayName;
 
-    ArrayList<Message> messageList=new ArrayList<Message>();
     ChatMessageAdapter messageAdapter ;
     RecyclerView messageView;
 
@@ -47,7 +49,7 @@ public class SpecificUserMessage extends AppCompatActivity {
         messageView.getLayoutManager().setMeasurementCacheEnabled(false);
         System.out.println("After view");
 
-        messageAdapter= new ChatMessageAdapter(messageList);
+        messageAdapter= new ChatMessageAdapter(user.get(index).getMessageList());
 
         DisplayMetrics mt=new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(mt);
@@ -77,7 +79,7 @@ public class SpecificUserMessage extends AppCompatActivity {
 
         displayName.setWidth(mt.widthPixels);
 
-        displayName.setText(dName);
+        displayName.setText(user.get(index).getdName());
 
         messageView.setAdapter(messageAdapter);
 
@@ -86,7 +88,8 @@ public class SpecificUserMessage extends AppCompatActivity {
     public void updateMessageList(String text)
     {
         Message msg=new Message(text);
-        messageList.add(msg);
+        user.get(index).getMessageList().add(msg);
+        //messageList.add(msg);
         msgBx.setText("");
         messageAdapter.notifyDataSetChanged();
     }

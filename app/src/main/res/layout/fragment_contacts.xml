@@ -1,12 +1,22 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         tools:context="com.app.ashu.slideview.Fragment.ContactsFragment"
-        android:background="#FFF9C4"
         android:padding="4dp">
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/searchBox"
+        android:hint="Enter Number"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -15,19 +25,15 @@
         android:focusableInTouchMode="true"
         >
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchBox"
-            android:hint="Enter Number"/>
 
-        <Button
+
+        <!--<Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/button1"
             android:text="Click Here to load Contacts" />
 
-        <!--<android.support.v7.widget.RecyclerView
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/activeMember"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -63,7 +69,7 @@
     </LinearLayout>
 
 
-
+    </ScrollView>
 
     <!-- TODO: Update blank fragment layout
     <TextView
@@ -74,4 +80,4 @@
         android:textSize="30sp" />-->
 
 
-</ScrollView>
+</LinearLayout>

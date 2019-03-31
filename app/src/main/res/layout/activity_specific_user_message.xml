@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.app.ashu.slideview.utility.SpecificUserMessage"
-    android:background="#FFF9C4"
     android:padding="4dp">
 
     <TextView

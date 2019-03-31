@@ -1,10 +1,13 @@
 package com.app.ashu.slideview.Fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -14,6 +17,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -27,16 +31,16 @@ import android.widget.Toast;
 
 import com.app.ashu.slideview.MainActivity;
 import com.app.ashu.slideview.R;
+import com.app.ashu.slideview.activity.SearchActivity;
+import com.app.ashu.slideview.database_utility.BasicUtility;
 import com.app.ashu.slideview.utility.CreateContactList;
 import com.app.ashu.slideview.utility.SpecificUserMessage;
+import com.app.ashu.slideview.utility.UserLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-/**
- * A simple {@link Fragment} subclass.
- */
 public class ContactsFragment extends Fragment {
 
 
@@ -49,7 +53,7 @@ public class ContactsFragment extends Fragment {
     Cursor cursor ;
     String name, phonenumber ;
     public  static final int RequestPermissionCode  = 1 ;
-    Button button;
+    //Button button;
     TextView txtView;
     EditText searchBox;
 
@@ -67,68 +71,28 @@ public class ContactsFragment extends Fragment {
         searchBox=(EditText)view.findViewById(R.id.searchBox);
 
 
-        button = (Button)view.findViewById(R.id.button1);
+        //button = (Button)view.findViewById(R.id.button1);
 
         activeContacts = new ArrayList<String>();
         inActiveContacts=new ArrayList<String>();
 
         EnableRuntimePermission();
 
-        final CreateContactList createList=new CreateContactList();
-
-        button.setOnClickListener(new View.OnClickListener() {
+        thread1 = new Thread(new Runnable() {
             @Override
-            public void onClick(View v) {
+            public void run() {
 
-                HashMap<String,ArrayList<String>> list=createList.getContactList(getContext());
-                activeContacts=list.get("Active");
-                permanentActieList=createList.getContactList(getContext()).get("Active");
-
-                inActiveContacts=list.get("InActive");
-                //GetContactsIntoArrayList();
-                //new ArrayAdapter<String>();
-                /*txtView=(TextView)findViewById(R.id.textView);
-                txtView.setOnClickListener(new View.OnClickListener() {
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
-                    public void onClick(View v) {
+                    public void run() {
+                        LoadContact lc=new LoadContact();
+                        lc.run();
 
-                        System.out.println("In the text View");
+                        SearchActivity.refreshList();
                     }
-                });*/
-
-                //activeContactAdapter = new ContactListAdapter(activeContacts);
-                activeContactAdapter = new ArrayAdapter<String>(getContext(),
-                        android.R.layout.simple_list_item_1,activeContacts
-                );
-
-                inActiveContactAdapter = new ArrayAdapter<String>(
-                        getContext(),
-                        android.R.layout.simple_list_item_1,inActiveContacts
-                );
-
-                activeMember.setAdapter(activeContactAdapter);
-                inActiveMember.setAdapter(inActiveContactAdapter);
-
-                setDynamicHeight(activeMember);
-                setDynamicHeight(inActiveMember);
-
-                /*activeMember.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        System.out.println("In the text View ");
-
-                        GotoMessage(v.getId());
-                    }
-                });*/
-                activeMember.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        System.out.println("In the text View "+position+"  "+id+" "+view.toString());
-
-                        GotoMessage(id);
-                    }
-
                 });
+
+
 
             }
         });
@@ -196,7 +160,7 @@ public class ContactsFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
-    ArrayList<String> permanentActieList=new ArrayList<String>();
+    public static ArrayList<String> permanentActieList=new ArrayList<String>();
     public void prepareSearchedList(String text)
     {
         ArrayList<String> newList=new ArrayList<String>();
@@ -240,13 +204,41 @@ public class ContactsFragment extends Fragment {
     public void GotoMessage(long id)
     {
         int i=(int)id;
-        SpecificUserMessage.dName=activeContacts.get(i).split(":")[0];
+        SpecificUserMessage spUser=new SpecificUserMessage();
+        String name=activeContacts.get(i).split(":")[0];
+
+        int ret=checkUniqueChat(name);
+
+        if(ret==-1)
+        {
+            UserLog newUser=new UserLog();
+            newUser.setdName(name);
+
+            SpecificUserMessage.user.add(newUser);
+            SpecificUserMessage.index=SpecificUserMessage.user.size()-1;
+        }
+        else
+        {
+            SpecificUserMessage.index=ret;
+        }
 
         Intent msg=new Intent(getContext(),SpecificUserMessage.class);
         this.startActivity(msg);
 
         //finish();
 
+    }
+
+    public int checkUniqueChat(String dname)
+    {
+        for(int i=0;i<SpecificUserMessage.user.size();i++)
+        {
+            if(SpecificUserMessage.user.get(i).getdName().equalsIgnoreCase(dname))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /*public void GetContactsIntoArrayList(){
@@ -302,6 +294,148 @@ public class ContactsFragment extends Fragment {
                 break;
         }
     }
+
+    class LoadContact //implements Runnable
+    {
+        //@Override
+        public void run() {
+
+            CreateContactList createList=new CreateContactList();
+            HashMap<String,ArrayList<String>> list=createList.getContactList(getContext());
+            activeContacts=list.get("Active");
+            permanentActieList=createList.getContactList(getContext()).get("Active");
+
+            inActiveContacts=list.get("InActive");
+            //GetContactsIntoArrayList();
+            //new ArrayAdapter<String>();
+                /*txtView=(TextView)findViewById(R.id.textView);
+                txtView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        System.out.println("In the text View");
+                    }
+                });*/
+
+            //activeContactAdapter = new ContactListAdapter(activeContacts);
+            activeContactAdapter = new ArrayAdapter<String>(getContext(),
+                    android.R.layout.simple_list_item_1,activeContacts
+            );
+
+            inActiveContactAdapter = new ArrayAdapter<String>(
+                    getContext(),
+                    android.R.layout.simple_list_item_1,inActiveContacts
+            );
+
+            activeMember.setAdapter(activeContactAdapter);
+            inActiveMember.setAdapter(inActiveContactAdapter);
+
+            setDynamicHeight(activeMember);
+            setDynamicHeight(inActiveMember);
+
+                /*activeMember.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        System.out.println("In the text View ");
+
+                        GotoMessage(v.getId());
+                    }
+                });*/
+            activeMember.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    System.out.println("In the text View "+position+"  "+id+" "+view.toString());
+
+                    GotoMessage(id);
+                }
+
+            });
+        }
+
+        public void refreshList()
+        {
+            BasicUtility dbObj=new BasicUtility(getContext());
+
+            activeContacts=dbObj.getContacts();
+
+            inActiveContacts=activeContacts;
+            activeContactAdapter = new ArrayAdapter<String>(getContext(),
+                    android.R.layout.simple_list_item_1,activeContacts
+            );
+
+            inActiveContactAdapter = new ArrayAdapter<String>(
+                    getContext(),
+                    android.R.layout.simple_list_item_1,inActiveContacts
+            );
+
+            activeMember.setAdapter(activeContactAdapter);
+            inActiveMember.setAdapter(inActiveContactAdapter);
+
+            setDynamicHeight(activeMember);
+            setDynamicHeight(inActiveMember);
+
+            activeMember.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    System.out.println("In the text View "+position+"  "+id+" "+view.toString());
+
+                    GotoMessage(id);
+                }
+
+            });
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        //System.out.println("Selected Menu "+item);
+
+        if(item.toString().equalsIgnoreCase("Refresh"))
+        {
+            LoadContact lc=new LoadContact();
+            lc.run();
+
+            //lc.refreshList();
+            //System.out.println("Size is "+activeContacts.size());
+            SearchActivity.refreshList();
+            //Handler Can be used later to remove lag
+            /*handler = new Handler(){
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    if (msg.what == 100){
+                        thread1.start();
+                    }
+                /*else if(msg.what == UPDATE_COUNT){
+                    textView.setText("Count"+msg.arg1);
+                }
+                }
+            };
+
+            handler.sendEmptyMessage(100);*/
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    Handler handler;
+    Thread thread1;
+    /*@Override
+    public void onResume() {
+        super.onResume();
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if (msg.what == 100){
+                    thread1.start();
+                }
+                /*else if(msg.what == UPDATE_COUNT){
+                    textView.setText("Count"+msg.arg1);
+                }
+            }
+        };
+    }*/
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
